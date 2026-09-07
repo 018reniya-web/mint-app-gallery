@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply text-slateink antialiased;
+  min-height: 100vh;
+  background-color: #f1fbf5;
+  background-image:
+    radial-gradient(38rem 38rem at 8% -8%, rgba(46, 196, 182, 0.20), transparent 60%),
+    radial-gradient(32rem 32rem at 100% 4%, rgba(168, 230, 207, 0.32), transparent 58%),
+    radial-gradient(40rem 40rem at 50% 118%, rgba(76, 175, 80, 0.14), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* モーダル表示中の背景スクロールを抑止 */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* 🌱 いいね連打時のキラキラ・パーティクル
+   各粒子は --tx / --ty / --rot / --dur を個別に持ち、
+   クリック位置から外へ飛び散りながら上へフワッと消える */
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  will-change: transform, opacity;
+  animation: spark-fly var(--dur, 0.8s) cubic-bezier(0.16, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes spark-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(
+        calc(-50% + var(--tx) * 0.45),
+        calc(-50% + var(--ty) * 0.45)
+      )
+      scale(1.15) rotate(calc(var(--rot) * 0.35));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--tx)),
+        calc(-50% + var(--ty) - 26px)
+      )
+      scale(0.35) rotate(var(--rot));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-poyon,
+  .animate-float-up,
+  .animate-blob-drift,
+  .spark {
+    animation: none !important;
+  }
+  .spark {
+    display: none;
+  }
+}
