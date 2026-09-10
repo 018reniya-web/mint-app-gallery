@@ -5,16 +5,21 @@ import type {
   CategoryFilter,
   NewAppInput,
   SortKey,
+  Visibility,
 } from "@/lib/types";
 
 const TABLE = "apps";
 
-/** 一覧取得。カテゴリ絞り込み + sort に応じていいね順 / 新着順で並べ替える */
+/**
+ * 一覧取得。visibility（表 / 裏）+ カテゴリで絞り込み、
+ * sort に応じていいね順 / 新着順で並べ替える。
+ */
 export async function fetchApps(
   sort: SortKey,
-  category: CategoryFilter = ALL_CATEGORY
+  category: CategoryFilter = ALL_CATEGORY,
+  visibility: Visibility = "public"
 ): Promise<AppItem[]> {
-  let query = supabase.from(TABLE).select("*");
+  let query = supabase.from(TABLE).select("*").eq("visibility", visibility);
 
   if (category !== ALL_CATEGORY) {
     query = query.eq("category", category);

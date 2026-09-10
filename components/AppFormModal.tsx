@@ -5,7 +5,7 @@ import { Loader2, Upload } from "lucide-react";
 import Modal from "@/components/Modal";
 import { addApp, updateApp, uploadMedia } from "@/lib/apps";
 import { CATEGORIES } from "@/lib/types";
-import type { AppItem, Category, NewAppInput } from "@/lib/types";
+import type { AppItem, Category, NewAppInput, Visibility } from "@/lib/types";
 
 type FormState = {
   title: string;
@@ -40,12 +40,15 @@ export default function AppFormModal({
   open,
   mode,
   target,
+  visibility = "public",
   onClose,
   onSaved,
 }: {
   open: boolean;
   mode: "create" | "edit";
   target?: AppItem | null;
+  /** 新規作成時に付与する公開範囲（現在の表 / 裏モード） */
+  visibility?: Visibility;
   onClose: () => void;
   onSaved: (app: AppItem) => void;
 }) {
@@ -84,6 +87,8 @@ export default function AppFormModal({
         title: form.title.trim(),
         description: form.description.trim(),
         category: form.category as Category,
+        // 編集時は元の公開範囲を維持し、新規時は現在のモードで投稿する
+        visibility: mode === "edit" && target ? target.visibility : visibility,
         author_name: form.author_name.trim(),
         media_url: mediaUrl,
         app_url: form.app_url.trim() || null,
@@ -115,6 +120,17 @@ export default function AppFormModal({
       title={mode === "edit" ? "投稿を編集" : "投稿する"}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {mode === "create" && visibility === "secret" && (
+          <p className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-slate-100">
+            🔒 この投稿は「裏投稿モード」で作成されます。裏モードでのみ表示されます。
+          </p>
+        )}
+        {mode === "edit" && target?.visibility === "secret" && (
+          <p className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-600">
+            🔒 裏投稿の編集中です。公開範囲（裏）は変更されません。
+          </p>
+        )}
+
         <Field label="タイトル" required>
           <input
             required

@@ -33,17 +33,21 @@ NEXT_PUBLIC_SUPABASE_MEDIA_BUCKET=app-media
 
 ```
 app/
-  layout.tsx          ルートレイアウト
+  layout.tsx          ルートレイアウト（favicon = metadata.icons → /MINTアイコン.png）
   page.tsx            トップ（Gallery を描画）
   globals.css         Tailwind エントリ
+public/
+  MINTlognew.png      ヘッダーロゴ
+  MINTアイコン.png    ブラウザタブ用アイコン（favicon）
 components/
-  Gallery.tsx         一覧・状態管理・Realtime 購読・背景アクセントの中核
-  Header.tsx          ヘッダー / 「🌱 投稿する」ボタン
+  Gallery.tsx         一覧・状態管理・Realtime 購読・表/裏モード・背景アクセントの中核
+  Header.tsx          ヘッダー / ロゴ画像（public/MINTlognew.png）/ 「投稿する」ボタン
   CategoryTabs.tsx    ジャンル絞り込みタブ（すべて / 自作アプリ / ...）
   SortTabs.tsx        いいね順 / 新着順の切り替え
   AppCard.tsx         カード（メディア・ジャンルバッジ・いいね・編集/削除）
   AppModal.tsx        詳細モーダル（編集/削除ボタン）
   AppFormModal.tsx    投稿 / 編集 兼用フォームモーダル（create / edit）
+  CommandBar.tsx      コマンド入力バー（Alt+M）— 表 / 裏投稿モードの切り替え
   LikeButton.tsx      🌱 連打いいねボタン + キラキラパーティクル演出
   CategoryBadge.tsx   ジャンル色分けバッジ
   Modal.tsx           共通モーダルラッパー
@@ -68,4 +72,7 @@ supabase/
 | 投稿フォーム | ヘッダー「🌱 投稿する」から。URL 入力または Storage へのファイルアップロード |
 | 編集 / 削除 | カードのホバー、または詳細モーダルの Pencil / Trash から。削除は確認ダイアログ付き |
 | リアルタイム | `postgres_changes` を購読し他ユーザーの投稿・いいね・編集・削除を即時反映 |
-| デザイン | 白 × ミントグリーンのグラデーション背景と柔らかい円形アクセント。ヘッダーは `public/MINTLogo.png`（無ければテキストにフォールバック） |
+| 裏投稿モード | `Alt+M`（または右下のボタン）でコマンドバーを開き `ura` / `裏` と入力すると裏モードへ。`omote` / `表` で戻る。裏で投稿したものは裏モードでのみ表示（`apps.visibility` = `public` / `secret`）。モードは `localStorage` に保存 |
+| デザイン | 白 × ミントグリーンのグラデーション背景と柔らかい円形アクセント。裏モードはダークテーマ。ヘッダーは `public/MINTlognew.png`（無ければテキストにフォールバック） |
+
+> 注: 裏投稿の絞り込みはクライアント側 + クエリ条件で行います（RLS は既存どおり匿名で全件参照可）。URL 秘匿レベルの隠しチャンネルであり、厳密なアクセス制御ではありません。

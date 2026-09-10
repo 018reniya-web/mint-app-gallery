@@ -9,6 +9,7 @@ create table if not exists public.apps (
   title        text not null,
   description  text not null default '',
   category     text not null default '自作アプリ',
+  visibility   text not null default 'public',   -- 'public'（表） / 'secret'（裏投稿）
   media_url    text,
   app_url      text,
   author_name  text not null,
@@ -19,10 +20,13 @@ create table if not exists public.apps (
 -- 既存テーブルへの後方互換マイグレーション
 alter table public.apps
   add column if not exists category text not null default '自作アプリ';
+alter table public.apps
+  add column if not exists visibility text not null default 'public';
 
 create index if not exists apps_likes_count_idx on public.apps (likes_count desc);
 create index if not exists apps_created_at_idx  on public.apps (created_at desc);
 create index if not exists apps_category_idx    on public.apps (category);
+create index if not exists apps_visibility_idx  on public.apps (visibility);
 
 -- 2. いいねインクリメント用 RPC ---------------------------------------
 -- 競合状態を避けるため、加算は DB 側で原子的に行う
