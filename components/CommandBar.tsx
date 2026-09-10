@@ -95,7 +95,7 @@ export default function CommandBar({
                 ref={inputRef}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder="コマンドを入力（例: ura / 裏, omote / 表, help）"
+                placeholder="コマンドを入力"
                 spellCheck={false}
                 autoComplete="off"
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500"

@@ -1,5 +1,5 @@
 -- =============================================================
--- MINT App Gallery - Supabase schema
+-- MINT App Gallery - Supabase schema (再実行安全版)
 -- Supabase ダッシュボード > SQL Editor に貼り付けて実行してください
 -- =============================================================
 
@@ -65,8 +65,18 @@ create policy "anyone can delete apps"
   on public.apps for delete
   using (true);
 
--- 4. Realtime ----------------------------------------------------
-alter publication supabase_realtime add table public.apps;
+-- 4. Realtime (既に登録済みの場合はスキップする安全処置) ------------------
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables 
+    where pubname = 'supabase_realtime' 
+      and schemaname = 'public' 
+      and tablename = 'apps'
+  ) then
+    alter publication supabase_realtime add table public.apps;
+  end if;
+end $$;
 
 -- 5. Storage バケット（画像 / 動画）--------------------------------
 insert into storage.buckets (id, name, public)
