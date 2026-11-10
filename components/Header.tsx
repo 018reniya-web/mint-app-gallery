@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Lock, Sparkles, Sprout } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Lock, LogOut, Sparkles, Sprout, User } from "lucide-react";
+import { emailToId, signOut } from "@/lib/auth";
+import { supabase } from "@/lib/supabaseClient";
 import type { Visibility } from "@/lib/types";
 
 export default function Header({
@@ -11,8 +14,25 @@ export default function Header({
   onAdd: () => void;
   mode?: Visibility;
 }) {
+  const router = useRouter();
   const [logoOk, setLogoOk] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const secret = mode === "secret";
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user ? emailToId(data.user.email) : null);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <header
@@ -70,19 +90,49 @@ export default function Header({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={onAdd}
-          className={
-            "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-card transition focus:outline-none focus:ring-2 focus:ring-offset-2 " +
-            (secret
-              ? "bg-slate-700 hover:bg-slate-600 focus:ring-slate-500"
-              : "bg-mint-500 hover:bg-mint-600 focus:ring-mint-400")
-          }
-        >
-          <Sprout className="h-4 w-4" />
-          投稿する
-        </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {userId && (
+            <span
+              className={
+                "hidden items-center gap-1 text-sm sm:inline-flex " +
+                (secret ? "text-slate-300" : "text-slateink-soft")
+              }
+            >
+              <User className="h-4 w-4" />
+              {userId}
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="ログアウト"
+            title="ログアウト"
+            className={
+              "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-sm font-semibold transition " +
+              (secret
+                ? "border-slate-600 text-slate-300 hover:bg-slate-800"
+                : "border-slate-200 text-slateink-soft hover:border-mint-400 hover:text-mint-600")
+            }
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">ログアウト</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onAdd}
+            className={
+              "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-card transition focus:outline-none focus:ring-2 focus:ring-offset-2 " +
+              (secret
+                ? "bg-slate-700 hover:bg-slate-600 focus:ring-slate-500"
+                : "bg-mint-500 hover:bg-mint-600 focus:ring-mint-400")
+            }
+          >
+            <Sprout className="h-4 w-4" />
+            投稿する
+          </button>
+        </div>
       </div>
     </header>
   );

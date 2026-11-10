@@ -44,28 +44,39 @@ as $$
 $$;
 
 -- 3. Row Level Security --------------------------------------------
--- 社内勉強会向けのため、匿名キーで自由に閲覧・登録・いいねできる設定
+-- ログイン済みユーザー（authenticated）のみ閲覧・登録・いいね・編集・削除できる設定
+-- アカウントは Supabase ダッシュボード > Authentication > Users で発行する
 alter table public.apps enable row level security;
 
+-- 旧ポリシー（匿名キーで誰でも操作可能）を削除
 drop policy if exists "apps are viewable by everyone" on public.apps;
-create policy "apps are viewable by everyone"
+drop policy if exists "anyone can insert apps" on public.apps;
+drop policy if exists "anyone can update likes" on public.apps;
+drop policy if exists "anyone can delete apps" on public.apps;
+
+drop policy if exists "authenticated can view apps" on public.apps;
+create policy "authenticated can view apps"
   on public.apps for select
+  to authenticated
   using (true);
 
-drop policy if exists "anyone can insert apps" on public.apps;
-create policy "anyone can insert apps"
+drop policy if exists "authenticated can insert apps" on public.apps;
+create policy "authenticated can insert apps"
   on public.apps for insert
+  to authenticated
   with check (true);
 
-drop policy if exists "anyone can update likes" on public.apps;
-create policy "anyone can update likes"
+drop policy if exists "authenticated can update apps" on public.apps;
+create policy "authenticated can update apps"
   on public.apps for update
+  to authenticated
   using (true)
   with check (true);
 
-drop policy if exists "anyone can delete apps" on public.apps;
-create policy "anyone can delete apps"
+drop policy if exists "authenticated can delete apps" on public.apps;
+create policy "authenticated can delete apps"
   on public.apps for delete
+  to authenticated
   using (true);
 
 -- 4. Realtime (既に登録済みの場合はスキップする安全処置) ------------------
@@ -87,11 +98,16 @@ values ('app-media', 'app-media', true)
 on conflict (id) do nothing;
 
 drop policy if exists "public read app-media" on storage.objects;
-create policy "public read app-media"
+drop policy if exists "anyone can upload app-media" on storage.objects;
+
+drop policy if exists "authenticated read app-media" on storage.objects;
+create policy "authenticated read app-media"
   on storage.objects for select
+  to authenticated
   using (bucket_id = 'app-media');
 
-drop policy if exists "anyone can upload app-media" on storage.objects;
-create policy "anyone can upload app-media"
+drop policy if exists "authenticated upload app-media" on storage.objects;
+create policy "authenticated upload app-media"
   on storage.objects for insert
+  to authenticated
   with check (bucket_id = 'app-media');

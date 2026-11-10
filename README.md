@@ -22,6 +22,18 @@ npm run dev
 1. [Supabase](https://supabase.com/) でプロジェクトを作成
 2. `supabase/schema.sql` を SQL Editor で実行（テーブル・RPC・RLS・Storage を作成）
 3. Project Settings > API の URL と anon key を `.env.local` に設定
+4. Authentication > Sign In / Providers で「Allow new users to sign up」を OFF にする（勝手な新規登録を防ぐ）
+
+### ログインアカウントの発行
+
+サイト全体がログイン必須です。ID は内部で `ID@mint.local` 形式のメールアドレスに変換して認証します。
+
+1. Supabase ダッシュボード > Authentication > Users > **Add user** > **Create new user**
+2. Email に `ID@mint.local`（例: `yamada@mint.local`）、Password に初期パスワードを入力
+3. **Auto Confirm User** にチェックを入れて作成
+4. 利用者には ID（`yamada`）とパスワードを伝える
+
+ID は小文字で発行してください（ログイン時の入力は小文字に変換されます）。
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=...
