@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageOff, Pencil, Trash2 } from "lucide-react";
+import { FileText, ImageOff, Pencil, Trash2 } from "lucide-react";
 import { isVideoUrl } from "@/lib/utils";
 import CategoryBadge from "@/components/CategoryBadge";
 import LikeButton from "@/components/LikeButton";
@@ -51,6 +51,12 @@ export default function AppCard({
           category={app.category}
           className="absolute left-3 top-3 shadow-sm"
         />
+        {app.pdf_url && (
+          <span className="absolute bottom-2 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-mint-600 shadow-sm">
+            <FileText className="h-3.5 w-3.5" />
+            PDF
+          </span>
+        )}
 
         {/* ホバーで表示される編集 / 削除 */}
         <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100">

@@ -12,6 +12,7 @@ create table if not exists public.apps (
   visibility   text not null default 'public',   -- 'public'（表） / 'secret'（裏投稿）
   media_url    text,
   app_url      text,
+  pdf_url      text,                               -- 資料 PDF（任意・1 投稿 1 ファイル）
   author_name  text not null,
   likes_count  integer not null default 0,
   created_at   timestamptz not null default now()
@@ -22,6 +23,8 @@ alter table public.apps
   add column if not exists category text not null default '自作アプリ';
 alter table public.apps
   add column if not exists visibility text not null default 'public';
+alter table public.apps
+  add column if not exists pdf_url text;
 
 create index if not exists apps_likes_count_idx on public.apps (likes_count desc);
 create index if not exists apps_created_at_idx  on public.apps (created_at desc);
@@ -78,7 +81,7 @@ begin
   end if;
 end $$;
 
--- 5. Storage バケット（画像 / 動画）--------------------------------
+-- 5. Storage バケット（画像 / 動画 / PDF）--------------------------------
 insert into storage.buckets (id, name, public)
 values ('app-media', 'app-media', true)
 on conflict (id) do nothing;

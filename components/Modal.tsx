@@ -7,11 +7,14 @@ export default function Modal({
   open,
   onClose,
   title,
+  size = "md",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
+  /** "xl" は PDF 併記などの横長レイアウト用 */
+  size?: "md" | "xl";
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -37,7 +40,10 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        className={
+          "max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl " +
+          (size === "xl" ? "max-w-6xl" : "max-w-lg")
+        }
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

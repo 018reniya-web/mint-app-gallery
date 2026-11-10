@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Upload } from "lucide-react";
+import { FileText, Loader2, Upload } from "lucide-react";
 import Modal from "@/components/Modal";
 import { addApp, updateApp, uploadMedia } from "@/lib/apps";
 import { CATEGORIES } from "@/lib/types";
@@ -14,6 +14,8 @@ type FormState = {
   author_name: string;
   media_url: string;
   app_url: string;
+  /** 登録済み PDF の URL（編集時に引き継ぐ。削除時は空文字） */
+  pdf_url: string;
 };
 
 const EMPTY: FormState = {
@@ -23,7 +25,10 @@ const EMPTY: FormState = {
   author_name: "",
   media_url: "",
   app_url: "",
+  pdf_url: "",
 };
+
+const MAX_PDF_MB = 30;
 
 function toForm(app: AppItem): FormState {
   return {
@@ -33,6 +38,7 @@ function toForm(app: AppItem): FormState {
     author_name: app.author_name,
     media_url: app.media_url ?? "",
     app_url: app.app_url ?? "",
+    pdf_url: app.pdf_url ?? "",
   };
 }
 
@@ -54,6 +60,7 @@ export default function AppFormModal({
 }) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [file, setFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,8 +69,23 @@ export default function AppFormModal({
     if (!open) return;
     setForm(mode === "edit" && target ? toForm(target) : EMPTY);
     setFile(null);
+    setPdfFile(null);
     setError(null);
   }, [open, mode, target]);
+
+  const handlePdfChange = (selected: File | null) => {
+    if (!selected) return;
+    if (selected.type !== "application/pdf") {
+      setError("PDF ファイルを選択してください。");
+      return;
+    }
+    if (selected.size > MAX_PDF_MB * 1024 * 1024) {
+      setError(`PDF は ${MAX_PDF_MB}MB 以下にしてください。`);
+      return;
+    }
+    setError(null);
+    setPdfFile(selected);
+  };
 
   const set = (key: keyof FormState, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -83,6 +105,9 @@ export default function AppFormModal({
       let mediaUrl: string | null = form.media_url.trim() || null;
       if (file) mediaUrl = await uploadMedia(file);
 
+      let pdfUrl: string | null = form.pdf_url || null;
+      if (pdfFile) pdfUrl = await uploadMedia(pdfFile);
+
       const payload: NewAppInput = {
         title: form.title.trim(),
         description: form.description.trim(),
@@ -92,6 +117,7 @@ export default function AppFormModal({
         author_name: form.author_name.trim(),
         media_url: mediaUrl,
         app_url: form.app_url.trim() || null,
+        pdf_url: pdfUrl,
       };
 
       const saved =
@@ -217,6 +243,55 @@ export default function AppFormModal({
           )}
         </Field>
 
+        <Field label={`資料 PDF（任意・${MAX_PDF_MB}MB まで）`} group>
+          {form.pdf_url && !pdfFile && (
+            <div className="flex items-center gap-2 text-sm text-slateink-soft">
+              <FileText className="h-4 w-4 text-mint-600" />
+              <a
+                href={form.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-mint-600"
+              >
+                登録済みの PDF
+              </a>
+              <button
+                type="button"
+                onClick={() => set("pdf_url", "")}
+                className="text-xs text-slate-400 underline"
+              >
+                削除
+              </button>
+            </div>
+          )}
+          <label className="inline-flex cursor-pointer items-center gap-2 self-start rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slateink-soft transition hover:border-mint-400 hover:text-mint-600">
+            <Upload className="h-4 w-4" />
+            {pdfFile
+              ? pdfFile.name
+              : form.pdf_url
+                ? "別の PDF に差し替え"
+                : "PDF をアップロード"}
+            <input
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={(e) => {
+                handlePdfChange(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {pdfFile && (
+            <button
+              type="button"
+              onClick={() => setPdfFile(null)}
+              className="mt-1 self-start text-xs text-slate-400 underline"
+            >
+              PDF をクリア
+            </button>
+          )}
+        </Field>
+
         <Field label="アプリURL（任意）">
           <input
             value={form.app_url}
@@ -247,19 +322,23 @@ const inputClass =
 function Field({
   label,
   required,
+  group,
   children,
 }: {
   label: string;
   required?: boolean;
+  /** 中にボタン等を含む場合は true（label のクリックが誤爆しないよう div で描画） */
+  group?: boolean;
   children: React.ReactNode;
 }) {
+  const Wrapper = group ? "div" : "label";
   return (
-    <label className="flex flex-col gap-1.5">
+    <Wrapper className="flex flex-col gap-1.5">
       <span className="text-sm font-medium text-slateink">
         {label}
         {required && <span className="ml-0.5 text-mint-600">*</span>}
       </span>
       {children}
-    </label>
+    </Wrapper>
   );
 }

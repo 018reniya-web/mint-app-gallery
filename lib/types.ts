@@ -27,6 +27,7 @@ export interface AppItem {
   visibility: Visibility;
   media_url: string | null;
   app_url: string | null;
+  pdf_url: string | null;
   author_name: string;
   likes_count: number;
   created_at: string;
@@ -40,6 +41,7 @@ export type NewAppInput = {
   author_name: string;
   media_url: string | null;
   app_url: string | null;
+  pdf_url: string | null;
 };
 
 export type SortKey = "likes" | "newest";
