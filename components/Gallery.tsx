@@ -18,7 +18,7 @@ const MODE_KEY = "mint:mode";
 
 export default function Gallery() {
   const [apps, setApps] = useState<AppItem[]>([]);
-  const [sort, setSort] = useState<SortKey>("likes");
+  const [sort, setSort] = useState<SortKey>("newest");
   const [category, setCategory] = useState<CategoryFilter>(ALL_CATEGORY);
   const [mode, setMode] = useState<Visibility>("public");
   const [loading, setLoading] = useState(true);
